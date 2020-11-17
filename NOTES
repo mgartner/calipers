@@ -1,0 +1,8 @@
+TODO
+
+- Find a suitable benchmarking library like Go's.
+- Finalize the BMP changes.
+- Somehow get old BMP version in here so I can compare bench's.
+- Start working on other file types.
+- Benchmark those too.
+- Try using a buffer pool.
