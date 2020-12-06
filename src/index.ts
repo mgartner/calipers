@@ -22,7 +22,7 @@ export interface Result {
 // measure returns the image dimensions of the file at the given path.
 export async function measure (input: string | Buffer, formats: Format): Promise<Result> {
   if (Buffer.isBuffer(input)) {
-    return measureBuffer(input)
+    return measureBuffer(input, formats)
   }
 
   let fd
@@ -32,7 +32,7 @@ export async function measure (input: string | Buffer, formats: Format): Promise
     const b = Buffer.alloc(HEADER_LENGTH)
     await fd.read(b, 0, HEADER_LENGTH, 0)
 
-    return measureBuffer(b)
+    return measureBuffer(b, formats)
   } finally {
     if (fd) {
       fd.close()
@@ -40,8 +40,8 @@ export async function measure (input: string | Buffer, formats: Format): Promise
   }
 }
 
-function measureBuffer (b: Buffer): Result {
-  const format = detect(b)
+function measureBuffer (b: Buffer, formats: Format): Result {
+  const format = detect(b, formats)
   if (format === Format.PNG) {
     return measurePNG(b)
   }
@@ -60,9 +60,10 @@ function measurePNG (header: Buffer): Result {
 
 // detect returns the file format of the given header buffer. Format.UNKNOWN is
 // returned if the file type is not supported.
-function detect (header: Buffer): Format {
+function detect (header: Buffer, formats: Format): Format {
   // PNG
   if (
+    includesFormat(formats, Format.PNG) &&
     // _PNG\r\n\x1a\n
     header[0] === 0x89 &&
     header[1] === 0x50 &&
@@ -82,4 +83,9 @@ function detect (header: Buffer): Format {
   }
 
   return Format.UNKNOWN
+}
+
+// includesFormat returns true if Format a contains Format b.
+function includesFormat (a: Format, b: Format): boolean {
+  return (a & b) === b
 }
