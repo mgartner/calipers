@@ -58,25 +58,21 @@ function measurePNG (header: Buffer): Result {
   }
 }
 
+// _PNG
+const PNG_HEADER_1 = Buffer.from([0x89, 0x50, 0x4e, 0x47]).readUInt32BE(0)
+// \r\n\x1a\n
+const PNG_HEADER_2 = Buffer.from([0x0d, 0x0a, 0x1a, 0x0a]).readUInt32BE(0)
+// IHDR
+const PNG_HEADER_3 = Buffer.from([0x49, 0x48, 0x44, 0x52]).readUInt32BE(0)
+
 // detect returns the file format of the given header buffer. Format.UNKNOWN is
 // returned if the file type is not supported.
 function detect (header: Buffer): Format {
   // PNG
   if (
-    // _PNG\r\n\x1a\n
-    header[0] === 0x89 &&
-    header[1] === 0x50 &&
-    header[2] === 0x4e &&
-    header[3] === 0x47 &&
-    header[4] === 0x0d &&
-    header[5] === 0x0a &&
-    header[6] === 0x1a &&
-    header[7] === 0x0a &&
-    // IHDR
-    header[12] === 0x49 &&
-    header[13] === 0x48 &&
-    header[14] === 0x44 &&
-    header[15] === 0x52
+    header.readUInt32BE(0) === PNG_HEADER_1 &&
+    header.readUInt32BE(4) === PNG_HEADER_2 &&
+    header.readUInt32BE(12) === PNG_HEADER_3
   ) {
     return Format.PNG
   }
